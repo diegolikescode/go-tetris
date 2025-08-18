@@ -8,7 +8,7 @@ import (
 	"golang.org/x/term"
 )
 
-var ScreenMatrix = [][]int{}
+var ScreenMatrix = [][]screen.Cell{}
 
 func main() {
 	stdInFd := int(os.Stdin.Fd())
@@ -26,9 +26,9 @@ func main() {
 		w, h = 80, 40
 	}
 
-	ScreenMatrix = make([][]int, h)
+	ScreenMatrix = make([][]screen.Cell, h)
 	for i := range ScreenMatrix {
-		ScreenMatrix[i] = make([]int, w)
+		ScreenMatrix[i] = make([]screen.Cell, w)
 	}
 
 	row := h / 2
@@ -36,9 +36,9 @@ func main() {
 
 	tetris.DrawTee(os.Stdout, row, col, ScreenMatrix)
 	tetris.DrawL(os.Stdout, row+5, col, ScreenMatrix)
-	tetris.DrawLInverted(os.Stdout, row-5, col-6, ScreenMatrix)
+	tetris.DrawLInverted(os.Stdout, row-10, col-10, ScreenMatrix)
 	tetris.DrawZ(os.Stdout, row+10, col+10, ScreenMatrix)
-	tetris.DrawZInverted(os.Stdout, 5, 5, ScreenMatrix)
+	tetris.DrawZInverted(os.Stdout, 10, 10, ScreenMatrix)
 	tetris.DrawSquare(os.Stdout, row-20, col-20, ScreenMatrix)
 	tetris.DrawColumn(os.Stdout, col-10, col-10, ScreenMatrix)
 	screen.MoveCursor(0, 1)
