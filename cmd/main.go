@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/diegolikescode/go-tetris/internal/screen"
@@ -34,18 +35,25 @@ func main() {
 	row := h / 2
 	col := w / 2
 
-	tetris.DrawTee(os.Stdout, row, col, ScreenMatrix)
-	tetris.DrawL(os.Stdout, row+5, col, ScreenMatrix)
-	tetris.DrawLInverted(os.Stdout, row-10, col-10, ScreenMatrix)
-	tetris.DrawZ(os.Stdout, row+10, col+10, ScreenMatrix)
-	tetris.DrawZInverted(os.Stdout, 10, 10, ScreenMatrix)
-	tetris.DrawSquare(os.Stdout, row-20, col-20, ScreenMatrix)
-	tetris.DrawColumn(os.Stdout, col-10, col-10, ScreenMatrix)
+	screen.DrawMainBlock(os.Stdout, row, col, ScreenMatrix)
+	screen.DrawHoldBlock(os.Stdout, row, col, ScreenMatrix)
+	screen.DrawCommandTexts(os.Stdout, row, col, ScreenMatrix)
+
+	drawSize(h, w)
 	screen.MoveCursor(0, 1)
 	os.Stdout.Sync()
 
-	buf := make([]byte, 1)
-	os.Stdin.Read(buf) // this thing makes it read next user input, and buf will store it
+	tetris.MainLoop(ScreenMatrix)
+
+	// var buf []byte
+	// buf = make([]byte, 1)
+	// os.Stdin.Read(buf)
+
 	restoreCb := screen.SetupRestore()
 	restoreCb()
+}
+
+func drawSize(h, w int) {
+	screen.MoveCursor(0, 0)
+	fmt.Fprint(os.Stdout, "size: ", w, "x", h)
 }
