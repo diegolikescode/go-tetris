@@ -2,6 +2,7 @@ package tetris
 
 import (
 	"math"
+	"math/rand"
 	"os"
 	"time"
 
@@ -57,8 +58,8 @@ func ReadUserAction(p Piece, matrix [][]screen.Cell) bool {
 }
 
 func SelectPiece(drawFuncArray []DrawPiece, row, col int, matrix [][]screen.Cell) Piece {
-	// r := rand.Intn(6)
-	return drawFuncArray[1](os.Stdout, row, col, matrix)
+	r := rand.Intn(6)
+	return drawFuncArray[r](os.Stdout, row, col, matrix)
 }
 
 func CurrentMovingPiece(p Piece, row, col int, matrix [][]screen.Cell) {
