@@ -119,7 +119,7 @@ func (p *Piece) CanGoLeft(matrix [][]screen.Cell) bool {
 
 	canMove := true
 	for k, v := range positionsDict {
-		if matrix[k][v-1].Occupied || matrix[k][v-2].Occupied {
+		if (matrix[k][v-1].Occupied || matrix[k][v-2].Occupied) && (matrix[k][v-1].Type != screen.PermeableInterface || matrix[k][v-2].Type != screen.PermeableInterface) {
 			return false
 		}
 	}
@@ -138,7 +138,7 @@ func (p *Piece) CanGoRight(matrix [][]screen.Cell) bool {
 
 	canMove := true
 	for k, v := range positionsDict {
-		if matrix[k][v+1].Occupied || matrix[k][v+2].Occupied {
+		if (matrix[k][v+1].Occupied || matrix[k][v+2].Occupied) && (matrix[k][v+1].Type != screen.PermeableInterface || matrix[k][v+2].Type != screen.PermeableInterface) {
 			return false
 		}
 	}
