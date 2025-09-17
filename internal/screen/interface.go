@@ -37,12 +37,12 @@ func DrawMainBlock(stdout *os.File, middleRow, middleColumn int, matrix [][]Cell
 	MiddleColMain = middleColumn
 
 	var c int
-	for c = 0; c < 9; c++ {
-		DrawChar(stdout, Interface, ComposeANSI(V, Reset), middleRow+c, middleColumn+MAIN_BLOCK_WIDTH_OFFSET, matrix)
+	for c = 0; c <= 9; c++ {
+		DrawChar(stdout, Interface, ComposeANSI(V, Reset), middleRow+c, middleColumn+MAIN_BLOCK_WIDTH_OFFSET+1, matrix)
 		DrawChar(stdout, Interface, ComposeANSI(V, Reset), middleRow+c, middleColumn-MAIN_BLOCK_WIDTH_OFFSET, matrix)
 
+		DrawChar(stdout, Interface, ComposeANSI(V, Reset), middleRow-c-1, middleColumn+MAIN_BLOCK_WIDTH_OFFSET+1, matrix)
 		DrawChar(stdout, Interface, ComposeANSI(V, Reset), middleRow-c-1, middleColumn-MAIN_BLOCK_WIDTH_OFFSET, matrix)
-		DrawChar(stdout, Interface, ComposeANSI(V, Reset), middleRow-c-1, middleColumn+MAIN_BLOCK_WIDTH_OFFSET, matrix)
 	}
 
 	for c = 0; c < MAIN_BLOCK_WIDTH_OFFSET; c++ {
@@ -56,10 +56,13 @@ func DrawMainBlock(stdout *os.File, middleRow, middleColumn int, matrix [][]Cell
 		// DrawChar(stdout, Interface, ComposeANSI("▀", Reset), middleRow+MAIN_BLOCK_HEIGHT_OFFSET-1, middleColumn+c, matrix)
 	}
 
-	DrawChar(stdout, Interface, ComposeANSI(TR, Reset), middleRow-MAIN_BLOCK_HEIGHT_OFFSET, middleColumn+c, matrix)
+	DrawChar(stdout, Interface, ComposeANSI(H, Reset), middleRow-MAIN_BLOCK_HEIGHT_OFFSET, middleColumn+c, matrix)
+	DrawChar(stdout, Interface, ComposeANSI(H, Reset), middleRow+MAIN_BLOCK_HEIGHT_OFFSET-1, middleColumn+c, matrix)
+
+	DrawChar(stdout, Interface, ComposeANSI(TR, Reset), middleRow-MAIN_BLOCK_HEIGHT_OFFSET, middleColumn+c+1, matrix)
 	DrawChar(stdout, Interface, ComposeANSI(TL, Reset), middleRow-MAIN_BLOCK_HEIGHT_OFFSET, middleColumn-c, matrix)
 	DrawChar(stdout, Interface, ComposeANSI(BL, Reset), middleRow+MAIN_BLOCK_HEIGHT_OFFSET-1, middleColumn-c, matrix)
-	DrawChar(stdout, Interface, ComposeANSI(BR, Reset), middleRow+MAIN_BLOCK_HEIGHT_OFFSET-1, middleColumn+c, matrix)
+	DrawChar(stdout, Interface, ComposeANSI(BR, Reset), middleRow+MAIN_BLOCK_HEIGHT_OFFSET-1, middleColumn+c+1, matrix)
 
 	// DrawChar(stdout, Interface, ComposeANSI("▀", Reset), middleRow+MAIN_BLOCK_HEIGHT_OFFSET-1, middleColumn-c, matrix)
 	// DrawChar(stdout, Interface, ComposeANSI("▀", Reset), middleRow+MAIN_BLOCK_HEIGHT_OFFSET-1, middleColumn+c, matrix)

@@ -1,7 +1,6 @@
 package tetris
 
 import (
-	"math"
 	"os"
 
 	"github.com/diegolikescode/go-tetris/internal/screen"
@@ -50,20 +49,22 @@ func (p *Piece) ClearPiece(matrix [][]screen.Cell) {
 	}
 }
 
-func (p *Piece) MoveLeft(matrix [][]screen.Cell) {
-	leftPoint64 := float64(math.MaxInt)
-	leftiestPoint := Positioning{}
+func (p *Piece) MovePiece(startCell Positioning, matrix [][]screen.Cell) {
+	relativePositions := []Positioning{}
 	for i := range p.Position {
-		newLeftPoint64 := math.Min(leftPoint64, float64(p.Position[i].Column))
-		if leftPoint64 != newLeftPoint64 {
-			leftiestPoint.Row = p.Position[i].Row
-			leftiestPoint.Column = p.Position[i].Column
-
-			leftPoint64 = newLeftPoint64
-		}
+		relativePositions[i].Row = p.Position[i].Row - startCell.Row
+		relativePositions[i].Column = p.Position[i].Column - startCell.Column
 	}
 
-	if !matrix[leftiestPoint.Row][leftiestPoint.Column-1].Occupied && !matrix[leftiestPoint.Row][leftiestPoint.Column-2].Occupied {
+	p.ClearPiece(matrix)
+	for i := range p.Position {
+		screen.DrawChar(os.Stdout, screen.Clear, screen.ComposeANSI(" ", p.Style), p.Position[i].Row-relativePositions[i].Row, p.Position[i].Column-relativePositions[i].Row, matrix)
+		p.Position[i].Column = p.Position[i].Column - 2
+	}
+}
+
+func (p *Piece) MoveLeft(matrix [][]screen.Cell) {
+	if p.CanGoLeft(matrix) {
 		p.ClearPiece(matrix)
 		for i := range p.Position {
 			screen.DrawChar(os.Stdout, screen.Clear, screen.ComposeANSI(" ", p.Style), p.Position[i].Row, p.Position[i].Column-2, matrix)
@@ -73,17 +74,7 @@ func (p *Piece) MoveLeft(matrix [][]screen.Cell) {
 }
 
 func (p *Piece) MoveRight(matrix [][]screen.Cell) {
-	rightPoint64 := 0.0
-	rightiestPoint := Positioning{}
-	for i := range p.Position {
-		newRightPoint64 := math.Max(rightPoint64, float64(p.Position[i].Column))
-		if rightPoint64 != newRightPoint64 {
-			rightiestPoint.Row = p.Position[i].Row
-			rightiestPoint.Column = p.Position[i].Column
-		}
-	}
-
-	if !matrix[rightiestPoint.Row][rightiestPoint.Column+1].Occupied && !matrix[rightiestPoint.Row][rightiestPoint.Column+2].Occupied {
+	if p.CanGoRight(matrix) {
 		p.ClearPiece(matrix)
 		for i := range p.Position {
 			screen.DrawChar(os.Stdout, screen.Clear, screen.ComposeANSI(" ", p.Style), p.Position[i].Row, p.Position[i].Column+2, matrix)
@@ -92,60 +83,89 @@ func (p *Piece) MoveRight(matrix [][]screen.Cell) {
 	}
 }
 
-func (p *Piece) MoveDown(matrix [][]screen.Cell) {
-	lowPoint64 := 0.0
-	lowestPoint := Positioning{}
-	for i := range p.Position {
-		newLowPoint64 := math.Max(lowPoint64, float64(p.Position[i].Row))
-		if lowPoint64 != newLowPoint64 {
-			lowestPoint.Row = p.Position[i].Row
-			lowestPoint.Column = p.Position[i].Column
-		}
-	}
+/*
+XXXXXX
+  XX
+[0,0],[0,1]|[0,2],[0,3]|[0,4],[0,5]
+           |[1,2],[1,3]|
+*/
 
-	if !matrix[lowestPoint.Row+1][lowestPoint.Column].Occupied {
+func (p *Piece) MoveDown(matrix [][]screen.Cell) {
+	if p.CanGoDown(matrix) {
 		p.ClearPiece(matrix)
 		for i := range p.Position {
-			screen.DrawChar(os.Stdout, screen.Clear, screen.ComposeANSI(" ", p.Style), p.Position[i].Row+1, p.Position[i].Column, matrix)
+			screen.DrawChar(os.Stdout, screen.Piece, screen.ComposeANSI(" ", p.Style), p.Position[i].Row+1, p.Position[i].Column, matrix)
 			p.Position[i].Row = p.Position[i].Row + 1
 		}
 	}
 }
 
-// TODO: fix
+/*
+XXXXXX
+  XX
+[0,0],[0,1]|[0,2],[0,3]|[0,4],[0,5]
+	       |[1,2],[1,3]|
+*/
+
+func (p *Piece) CanGoLeft(matrix [][]screen.Cell) bool {
+	// map: row -> col
+	positionsDict := make(map[int]int)
+
+	for _, pos := range p.Position {
+		if positionsDict[pos.Row] == 0 || positionsDict[pos.Row] > pos.Column {
+			positionsDict[pos.Row] = pos.Column
+		}
+	}
+
+	canMove := true
+	for k, v := range positionsDict {
+		if matrix[k][v-1].Occupied || matrix[k][v-2].Occupied {
+			return false
+		}
+	}
+	return canMove
+}
+
+func (p *Piece) CanGoRight(matrix [][]screen.Cell) bool {
+	// map: row -> col
+	positionsDict := make(map[int]int)
+
+	for _, pos := range p.Position {
+		if positionsDict[pos.Row] == 0 || positionsDict[pos.Row] < pos.Column {
+			positionsDict[pos.Row] = pos.Column
+		}
+	}
+
+	canMove := true
+	for k, v := range positionsDict {
+		if matrix[k][v+1].Occupied || matrix[k][v+2].Occupied {
+			return false
+		}
+	}
+	return canMove
+}
+
+func (p *Piece) CanGoDown(matrix [][]screen.Cell) bool {
+	// map: column -> row
+	positionsDict := make(map[int]int)
+
+	for _, pos := range p.Position {
+		if positionsDict[pos.Column] == 0 || positionsDict[pos.Column] < pos.Row {
+			positionsDict[pos.Column] = pos.Row
+		}
+	}
+
+	canMove := true
+	for k, v := range positionsDict {
+		if matrix[v+1][k].Occupied && matrix[v+1][k].Type != screen.PermeableInterface {
+			return false
+		}
+	}
+	return canMove
+}
+
+// @todo
 func (p *Piece) SmashDown(matrix [][]screen.Cell) {
-	lowPoint64 := 0.0
-	lowestPoint := Positioning{}
-
-	for i := range p.Position {
-		newLowPoint64 := math.Max(lowPoint64, float64(p.Position[i].Row))
-		if lowPoint64 != newLowPoint64 {
-			lowestPoint.Row = p.Position[i].Row
-			lowestPoint.Column = p.Position[i].Column
-		}
-	}
-
-	heighestPointOffset := lowestPoint.Row - p.Position[0].Row
-
-	smashingPoint := Positioning{}
-	for i := range len(matrix) {
-		row := matrix[i]
-
-		if row[lowestPoint.Column].Occupied && row[lowestPoint.Column].Type != screen.PermeableInterface {
-			smashingPoint.Row = i - heighestPointOffset
-			smashingPoint.Column = lowestPoint.Column
-			break
-		}
-	}
-
-	if !matrix[lowestPoint.Row+1][lowestPoint.Column].Occupied {
-		p.ClearPiece(matrix)
-		for i := range p.Position {
-			row := smashingPoint.Row - heighestPointOffset
-			screen.DrawChar(os.Stdout, screen.Clear, screen.ComposeANSI(" ", p.Style), row, p.Position[i].Column, matrix)
-			p.Position[i].Row = smashingPoint.Row
-		}
-	}
 }
 
 func DrawTee(stdout *os.File, row, col int, matrix [][]screen.Cell) Piece {
